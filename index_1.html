@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+        content="A panorama video generation pipeline based on the given prompts and motion conditions.">
+
+    <title>Perspective View</title>
+    <link rel="icon" href="./static/images/page.svg">
+
+    <!-- reset css  -->
+    <link href="./static/css/reset.css" rel="stylesheet" />
+
+    <link href="./static/css/index.css" rel="stylesheet" />
+
+    <script src="./static/js/index.js" defer></script>
+
+    <script src="./static/js/aframe.min.js" defer></script>
+
+</head>
+
+<body>
+    <header>
+        <h1 class="center">Panorama Video</h1>
+
+        <div class="center">
+            100 frames, 20 fps, 4096 x 2048 resolution
+        </div>
+
+        <div class="top-videos">
+            <div class="video">
+                <video playsinline autoplay loop muted>
+                    <source data-src="./static/videos/output73_4k_2k.mp4" data-vrsrc="./static/videos/01-vr.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+    </header>
+
+
+
+ 
+    <section>
+        <h2>Panorama Video</h2>
+        <div class="show gallery">
+            <div class="full-line center">
+                Model:
+                <a href="https://civitai.com/models/30240/toonyou">Toonyou</a>
+            </div>
+            <div class="video">
+                <video playsinline autoplay loop muted>
+                    <source data-src="./static/videos/output73_4k_2k.mp4" type="video/mp4">
+                </video>
+            </div>
+
+        </div>
+    </section>
+
+
+    <footer>
+        <p>
+            This website is constructed using the templet provided by <a
+                href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>. Thanks for their effort.
+        </p>
+    </footer>
+</body>
+
+</html>
