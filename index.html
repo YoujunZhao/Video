@@ -1,70 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description"
-        content="A panorama video generation pipeline based on the given prompts and motion conditions.">
-
-    <title>Perspective View</title>
-    <link rel="icon" href="./static/images/page.svg">
-
-    <!-- reset css  -->
-    <link href="./static/css/reset.css" rel="stylesheet" />
-
-    <link href="./static/css/index.css" rel="stylesheet" />
-
-    <script src="./static/js/index.js" defer></script>
-
-    <script src="./static/js/aframe.min.js" defer></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panorama Video Viewer</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #1a1a1a);
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin: 2rem auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            max-width: 1000px;
+        }
+        
+        .video-container:hover {
+            transform: scale(1.02);
+        }
+        
+        #panoramaVideo {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .overlay-text {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-container:hover .overlay-text {
+            opacity: 1;
+        }
+        
+        .info-panel {
+            background: rgba(40, 44, 52, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-panel h2 {
+            margin-bottom: 1rem;
+            color: #3498db;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .info-card {
+            background: rgba(30, 34, 42, 0.6);
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-card h3 {
+            margin-bottom: 0.5rem;
+            color: #9b59b6;
+        }
+        
+        .aframe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: none;
+            background: #000;
+        }
+        
+        #closeButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #closeButton:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(30, 34, 42, 0.8);
+            margin-top: 2rem;
+        }
+        
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        footer a:hover {
+            color: #9b59b6;
+            text-decoration: underline;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-container {
+                border-radius: 8px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-    <header>
-        <h1 class="center">Panorama Video</h1>
-
-        <div class="center">
-            100 frames, 20 fps, 4096 x 2048 resolution
-        </div>
-
-        <div class="top-videos">
-            <div class="video">
-                <video playsinline autoplay loop muted>
-                    <source data-src="./static/videos/output73_4k_2k.mp4" data-vrsrc="./static/videos/01-vr.mp4" type="video/mp4">
+    <div class="container">
+        <header>
+            <h1>Panorama Video Viewer</h1>
+            <div class="subtitle">High-resolution 360° Video Experience</div>
+        </header>
+        
+        <main>
+            <div class="video-container">
+                <video id="panoramaVideo" playsinline autoplay loop muted>
+                    <!-- 将src值替换为你的本地视频路径 -->
+                    <source src="./static/videos/output73_4k_2k.mp4" type="video/mp4">
+                    您的浏览器不支持视频标签。
                 </video>
+                <div class="overlay-text">点击视频进入360°沉浸式视角</div>
             </div>
-        </div>
-
-    </header>
-
-
-
- 
-    <section>
-        <h2>Panorama Video</h2>
-        <div class="show gallery">
-            <div class="full-line center">
-                Model:
-                <a href="https://civitai.com/models/30240/toonyou">Toonyou</a>
+            
+            <div class="info-panel">
+                <h2>视频规格信息</h2>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>分辨率</h3>
+                        <p>4096 × 2048 像素</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>帧率</h3>
+                        <p>20 FPS</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>时长</h3>
+                        <p>100帧 / 5秒</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>格式</h3>
+                        <p>MP4 (H.264编码)</p>
+                    </div>
+                </div>
             </div>
-            <div class="video">
-                <video playsinline autoplay loop muted>
-                    <source data-src="./static/videos/output73_4k_2k.mp4" type="video/mp4">
-                </video>
-            </div>
-
-        </div>
-    </section>
-
-
+        </main>
+    </div>
+    
+    <!-- A-Frame 全景视图容器 -->
+    <div id="aframeContainer" class="aframe-container">
+        <button id="closeButton">✕</button>
+        <a-scene>
+            <a-assets>
+                <!-- 将src值替换为你的本地视频路径 -->
+                <video id="panoramaSource" autoplay loop muted playsinline
+                       src="./static/videos/output73_4k_2k.mp4"></video>
+            </a-assets>
+            
+            <!-- 全景球体 -->
+            <a-entity geometry="primitive: sphere; radius: 50; segmentsWidth: 64; segmentsHeight: 64"
+                      material="shader: flat; src: #panoramaSource; side: back">
+            </a-entity>
+            
+            <!-- 相机控制器 -->
+            <a-entity camera look-controls="pointerLockEnabled: true"
+                      position="0 0 0" wasd-controls="fly: true">
+            </a-entity>
+            
+            <!-- 环境光 -->
+            <a-light type="ambient" intensity="0.4"></a-light>
+        </a-scene>
+    </div>
+    
     <footer>
-        <p>
-            This website is constructed using the templet provided by <a
-                href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>. Thanks for their effort.
-        </p>
+        <p>全景视频技术实现 | 基于 <a href="https://aframe.io/" target="_blank">A-Frame</a> 框架</p>
     </footer>
-</body>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const panoramaVideo = document.getElementById('panoramaVideo');
+            const aframeContainer = document.getElementById('aframeContainer');
+            const closeButton = document.getElementById('closeButton');
+            const panoramaSource = document.getElementById('panoramaSource');
+            
+            // 点击平面视频进入全景视图
+            panoramaVideo.addEventListener('click', function() {
+                // 暂停平面视频
+                panoramaVideo.pause();
+                
+                // 显示全景视图
+                aframeContainer.style.display = 'block';
+                
+                // 确保全景视频播放
+                panoramaSource.play();
+                
+                // 进入全屏模式
+                if (aframeContainer.requestFullscreen) {
+                    aframeContainer.requestFullscreen();
+                }
+            });
+            
+            // 关闭全景视图
+            closeButton.addEventListener('click', function() {
+                // 退出全屏模式
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                
+                // 隐藏全景视图
+                aframeContainer.style.display = 'none';
+                
+                // 恢复平面视频播放
+                panoramaVideo.play();
+            });
+            
+            // 处理全屏变化
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement) {
+                    aframeContainer.style.display = 'none';
+                    panoramaVideo.play();
+                }
+            });
+        });
+    </script>
+</body>
 </html>
